@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enrollment & Attendance</title>
+<style>
+:root{--bg:#f3f5f1;--card:#fff;--ink:#1d2b24;--mute:#66746c;--line:#d9dfd9;--brand:#1f5c46;--brand2:#e8f1ec;--side:#17352b;--pres:#2e7d4f;--abs:#b5372f;--late:#b7791f;--exc:#3b6aa8}
+@media(prefers-color-scheme:dark){:root{--bg:#121815;--card:#1a221e;--ink:#e6ede8;--mute:#93a39a;--line:#2c3832;--brand:#5fbf95;--brand2:#20302a;--side:#0d1a15;--pres:#5fbf95;--abs:#ef7f76;--late:#e5b45a;--exc:#7fa8de}}
+body.member{--bg:#fbf6ee;--brand:#c2571a;--brand2:#fbe9dc}
+@media(prefers-color-scheme:dark){body.member{--bg:#1c1713;--brand:#f09a63;--brand2:#33261c;--card:#262019}}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.5 Georgia,"Times New Roman",serif;background:var(--bg);color:var(--ink);min-height:100vh}
+body.member{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+input,select{padding:9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);width:100%}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+label{display:flex;flex-direction:column;font-size:13px;color:var(--mute);gap:4px}
+.btn{background:var(--brand);color:var(--bg);border:0;padding:10px 16px;border-radius:6px;cursor:pointer;font-weight:700}
+body.member .btn{color:#fff}
+.btn.alt{background:var(--brand2);color:var(--brand)}
+.btn.sm{padding:5px 9px;font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:14px}
+.wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:480px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--mute);font-weight:600;font-size:13px}
+.empty{color:var(--mute);text-align:center;padding:24px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.row label{flex:1;min-width:140px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:9}
+.toast.show{opacity:1}
+.login{max-width:420px;margin:6vh auto;padding:0 16px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{flex:1;padding:9px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:6px;cursor:pointer}
+.tabs button.on{background:var(--brand);color:var(--bg);border-color:var(--brand)}
+.link{background:none;border:0;color:var(--brand);cursor:pointer;text-decoration:underline;padding:0}
+.shell{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+.side{background:var(--side);padding:18px 10px;display:flex;flex-direction:column;gap:4px}
+.side h1{font-size:16px;margin:0 8px 14px;color:#e6ede8}
+.side button{background:none;border:0;color:#b9c9c0;text-align:left;padding:9px 10px;border-radius:6px;cursor:pointer}
+.side button.on{background:rgba(255,255,255,.12);color:#fff;font-weight:700}
+.side .sp{flex:1}
+.main{padding:20px;max-width:980px;width:100%}
+.main h2{margin:0 0 14px;font-size:20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+.stat b{display:block;font-size:28px;color:var(--brand)}
+.stat span{color:var(--mute);font-size:13px}
+.seg{display:flex;gap:4px}
+.seg button{border:1px solid var(--line);background:var(--bg);color:var(--mute);padding:5px 9px;border-radius:5px;cursor:pointer;font-size:13px}
+.seg button.on{color:#fff}
+.seg [data-s=P].on{background:var(--pres)}.seg [data-s=A].on{background:var(--abs)}.seg [data-s=L].on{background:var(--late)}.seg [data-s=E].on{background:var(--exc)}
+.code{font:700 36px/1 ui-monospace,Menlo,monospace;letter-spacing:.2em;color:var(--brand);margin:10px 0}
+.badge{border-radius:99px;padding:2px 10px;font-size:12px;font-weight:700;background:var(--brand2);color:var(--brand)}
+.badge.pending{color:var(--late)}.badge.rejected{color:var(--abs)}.badge.enrolled{color:var(--pres)}
+@media(max-width:700px){.shell{grid-template-columns:1fr}.side{flex-direction:row;overflow-x:auto;padding:8px}.side h1,.side .sp{display:none}.side button{white-space:nowrap}}
+.mbar{display:flex;justify-content:space-between;align-items:center;padding:16px;max-width:560px;margin:auto}
+.mbody{max-width:560px;margin:auto;padding:0 16px 40px}
+.mbody .card{border-radius:18px}
+.hero{display:flex;align-items:center;gap:18px}
+.ring{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;flex:none}
+.ring span{width:74px;height:74px;border-radius:50%;background:var(--card);display:grid;place-items:center;font-size:22px;font-weight:800}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.chip{background:var(--brand2);color:var(--brand);border-radius:99px;padding:3px 12px;font-size:13px;font-weight:600}
+.hist{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.tag{font-weight:700}.tag.P{color:var(--pres)}.tag.A{color:var(--abs)}.tag.L{color:var(--late)}.tag.E{color:var(--exc)}
+</style>
+</head>
+<body>
+<div id="root"></div><div class="toast" id="toast"></div>
+<script>
+const ST={P:"Present",A:"Absent",L:"Late",E:"Excused"};
+let S=null;try{S=JSON.parse(sessionStorage.getItem("s"))}catch(e){}
+let tab="ov",role="member",reg=false,D="",rows=[];
+const $=s=>document.querySelector(s),root=$("#root");
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fd=e=>Object.fromEntries(new FormData(e.target));
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2200)}
+async function api(p,m="GET",b){
+  try{
+    const r=await fetch("/api"+p,{method:m,headers:{"content-type":"application/json",...(S?{authorization:"Bearer "+S.t}:{})},body:b?JSON.stringify(b):undefined});
+    const j=await r.json().catch(()=>({}));
+    if(r.status===401&&S){logout();toast(j.error);return null}
+    if(!r.ok){toast(j.error||"Something went wrong");return null}
+    return j;
+  }catch(e){toast("Cannot reach the server");return null}
+}
+function logout(){S=null;sessionStorage.removeItem("s");render()}
+function render(){document.body.className=S?S.role:"";!S?login():S.role==="admin"?admin():member()}
+
+function login(){
+  root.innerHTML=`<div class="login"><h1 style="margin:0 0 4px">Enrollment & Attendance</h1><p style="color:var(--mute);margin:0 0 16px">${reg?"Create a member account and request enrollment.":"Sign in to continue."}</p>
+  ${reg?"":`<div class="tabs"><button class="${role==="member"?"on":""}" onclick="role='member';login()">Member</button><button class="${role==="admin"?"on":""}" onclick="role='admin';login()">Admin</button></div>`}
+  <form class="card" onsubmit="${reg?"doReg":"doLogin"}(event)" style="display:grid;gap:12px">
+  ${reg?`<div class="grid"><label>Student number<input name="sn" required></label><label>Full name<input name="name" required></label>
+  <label>Course<input name="course" required placeholder="e.g. BSIT"></label><label>Year level<select name="year">${[1,2,3,4,5].map(y=>`<option>${y}</option>`).join("")}</select></label>
+  <label>Section<input name="section" required placeholder="e.g. A"></label><label>Contact number<input name="contact"></label></div>
+  <label>Password (6+ characters)<input name="password" type="password" minlength="6" required></label><button class="btn">Request enrollment</button>
+  <button type="button" class="link" onclick="reg=false;login()">Back to sign in</button>`
+  :`<label>${role==="admin"?"Username":"Student number"}<input name="user" required autocomplete="username"></label>
+  <label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="btn">Sign in</button>
+  ${role==="member"?`<button type="button" class="link" onclick="reg=true;login()">New member? Create an account</button>`:""}`}
+  </form></div>`;
+}
+async function doLogin(e){e.preventDefault();const j=await api("/login","POST",{...fd(e),role});if(!j)return;S={t:j.token,role:j.role,name:j.name};sessionStorage.setItem("s",JSON.stringify(S));tab="ov";render()}
+async function doReg(e){e.preventDefault();if(await api("/register","POST",fd(e))){toast("Request sent. Sign in to see your status.");reg=false;login()}}
+
+/* ---------------- ADMIN ---------------- */
+const TABS=[["ov","Overview"],["en","Enrollment"],["at","Attendance"],["rp","Reports"],["ck","Check-in"]];
+function admin(){
+  root.innerHTML=`<div class="shell"><aside class="side"><h1>Admin panel</h1>${TABS.map(([k,v])=>`<button class="${k===tab?"on":""}" onclick="tab='${k}';admin()">${v}</button>`).join("")}<span class="sp"></span><button onclick="logout()">Sign out</button></aside><main class="main" id="app"><div class="empty">Loading...</div></main></div>`;
+  ({ov:aOv,en:aEn,at:aAt,rp:aRp,ck:aCk})[tab]();
+}
+async function aOv(){
+  const [m,a]=await Promise.all([api("/members"),api("/attendance")]);if(!m||!a)return;
+  const c=s=>m.filter(x=>x.status===s).length,pr=a.filter(x=>x.status==="P"||x.status==="L").length;
+  $("#app").innerHTML=`<h2>Overview</h2><div class="stats"><div class="stat"><b>${c("pending")}</b><span>Pending requests</span></div><div class="stat"><b>${c("enrolled")}</b><span>Enrolled members</span></div><div class="stat"><b>${pr}</b><span>Present today</span></div><div class="stat"><b>${a.filter(x=>x.status==="A").length}</b><span>Absent today</span></div></div>
+  <div class="card">${c("pending")?`<b>${c("pending")} enrollment request(s) are waiting.</b><p></p><button class="btn" onclick="tab='en';admin()">Review requests</button>`:`<b>No pending requests.</b><p style="color:var(--mute)">New member requests will appear in Enrollment.</p>`}</div>`;
+}
+async function aEn(){
+  const m=await api("/members");if(!m)return;const p=m.filter(x=>x.status==="pending");
+  $("#app").innerHTML=`<h2>Enrollment</h2>
+  <div class="card"><b>Pending requests</b>${p.length?`<div class="wrap"><table>${p.map(x=>`<tr><td>${esc(x.name)}<br><small style="color:var(--mute)">${esc(x.sn)}</small></td><td>${esc(x.course)} ${x.year}-${esc(x.section)}</td><td style="white-space:nowrap"><button class="btn sm" onclick="setSt(${x.id},'enrolled')">Approve</button> <button class="btn alt sm" onclick="setSt(${x.id},'rejected')">Reject</button></td></tr>`).join("")}</table></div>`:`<p class="empty">No pending requests.</p>`}</div>
+  <div class="card"><b>Enroll a member</b><form onsubmit="addM(event)" style="margin-top:10px"><div class="grid"><label>Student number<input name="sn" required></label><label>Full name<input name="name" required></label><label>Course<input name="course" required></label><label>Year<select name="year">${[1,2,3,4,5].map(y=>`<option>${y}</option>`).join("")}</select></label><label>Section<input name="section" required></label><label>Password<input name="password" placeholder="Blank = student number"></label></div><p><button class="btn">Enroll member</button></p></form></div>
+  <div class="card"><b>All members</b><div class="wrap"><table><tr><th>Name</th><th>Class</th><th>Status</th><th></th></tr>${m.map(x=>`<tr><td>${esc(x.name)}<br><small style="color:var(--mute)">${esc(x.sn)}</small></td><td>${esc(x.course)} ${x.year}-${esc(x.section)}</td><td><span class="badge ${x.status}">${x.status}</span></td><td style="white-space:nowrap">${x.status!=="enrolled"?`<button class="btn alt sm" onclick="setSt(${x.id},'enrolled')">Approve</button> `:""}<button class="btn alt sm" onclick="delM(${x.id},'${esc(x.name).replace(/'/g,"")}')">Remove</button></td></tr>`).join("")||`<tr><td colspan="4" class="empty">No members yet.</td></tr>`}</table></div></div>`;
+}
+async function setSt(id,status){if(await api("/members/"+id,"PATCH",{status})){toast(status==="enrolled"?"Member enrolled":"Request rejected");aEn()}}
+async function addM(e){e.preventDefault();if(await api("/members","POST",fd(e))){toast("Member enrolled");aEn()}}
+async function delM(id,n){if(confirm(`Remove ${n}? Their attendance records are deleted too.`)&&await api("/members/"+id,"DELETE")){toast("Member removed");aEn()}}
+async function aAt(){
+  if(!D)D=new Date().toLocaleDateString("en-CA");
+  $("#app").innerHTML=`<h2>Attendance</h2><div class="card"><div class="row"><label>Date<input type="date" value="${D}" onchange="D=this.value;loadAt()"></label><button class="btn alt" onclick="markAll()">Mark all present</button></div><div class="wrap" id="tbl"></div></div>`;loadAt();
+}
+async function loadAt(){const r=await api("/attendance?date="+D);if(r){rows=r;drawAt()}}
+function drawAt(){
+  $("#tbl").innerHTML=rows.length?`<table><tr><th>Name</th><th>Class</th><th>Status</th></tr>${rows.map(s=>`<tr><td>${esc(s.name)}<br><small style="color:var(--mute)">${esc(s.sn)}</small></td><td>${esc(s.course)} ${s.year}-${esc(s.section)}</td><td><div class="seg">${Object.entries(ST).map(([k,v])=>`<button data-s="${k}" class="${s.status===k?"on":""}" onclick="mark([${s.id}],'${k}')">${v}</button>`).join("")}</div></td></tr>`).join("")}</table>`:`<div class="empty">No enrolled members yet. Approve a request first.</div>`;
+}
+async function mark(ids,status){if(await api("/attendance","PUT",{day:D,ids,status})){rows.forEach(r=>{if(ids.includes(r.id))r.status=status});drawAt()}}
+function markAll(){if(rows.length)mark(rows.map(r=>r.id),"P")}
+async function aRp(){
+  const m=(await api("/members"))?.filter(x=>x.status==="enrolled");if(!m)return;window._rp=m;
+  const rate=x=>{const n=x.p+x.l+x.a+x.e;return n?Math.round((x.p+x.l)/n*100):null};
+  $("#app").innerHTML=`<h2>Reports</h2><div class="card"><div class="row"><span style="flex:1;color:var(--mute)">Rate counts Present and Late as attended.</span><button class="btn alt" onclick="csv()">Download CSV</button></div><div class="wrap">${m.length?`<table><tr><th>Name</th><th>Class</th><th>Present</th><th>Late</th><th>Absent</th><th>Excused</th><th>Rate</th></tr>${m.map(x=>{const r=rate(x);return`<tr><td>${esc(x.name)}</td><td>${esc(x.course)} ${x.year}-${esc(x.section)}</td><td>${x.p}</td><td>${x.l}</td><td>${x.a}</td><td>${x.e}</td><td style="font-weight:700;color:${r!==null&&r<75?"var(--abs)":"var(--pres)"}">${r===null?"-":r+"%"}</td></tr>`}).join("")}</table>`:`<div class="empty">No data yet.</div>`}</div></div>`;
+}
+function csv(){
+  const rows=[["Student No","Name","Course","Year","Section","Present","Late","Absent","Excused"],...window._rp.map(x=>[x.sn,x.name,x.course,x.year,x.section,x.p,x.l,x.a,x.e])];
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(",")).join("\n")],{type:"text/csv"}));a.download="attendance-report.csv";a.click();
+}
+async function aCk(c){
+  c=c||await api("/code");if(!c)return;
+  $("#app").innerHTML=`<h2>Check-in</h2><div class="card"><b>Code for ${c.day}</b><p style="color:var(--mute);margin:4px 0">Members enter this code in their dashboard to mark themselves present.</p>${c.open?`<div class="code">${c.code}</div><button class="btn alt" onclick="setCk(false)">Close check-in</button>`:`<button class="btn" onclick="setCk(true)">Open check-in</button>`}</div>`;
+}
+async function setCk(open){const c=await api("/code","POST",{open});if(c)aCk(c)}
+
+/* ---------------- MEMBER ---------------- */
+async function member(){
+  root.innerHTML=`<div class="mbar"><b>Hello</b><button class="btn alt sm" onclick="logout()">Sign out</button></div><div class="mbody"><div class="empty">Loading...</div></div>`;
+  const r=await api("/me");if(!r)return;const {m,counts:c,hist,open,mine}=r;
+  const P=c.P||0,L=c.L||0,A=c.A||0,E=c.E||0,n=P+L+A+E,rate=n?Math.round((P+L)/n*100):null,col=rate===null?"var(--line)":rate<75?"var(--abs)":"var(--pres)";
+  const msg={pending:"Your enrollment request is waiting for admin approval.",rejected:"Your enrollment request was not approved. Please contact the admin.",enrolled:""}[m.status];
+  root.innerHTML=`<div class="mbar"><div><small style="color:var(--mute)">Welcome back</small><br><b style="font-size:18px">${esc(m.name.split(" ")[0])}</b></div><button class="btn alt sm" onclick="logout()">Sign out</button></div><div class="mbody">
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><b>My enrollment</b><span class="badge ${m.status}">${m.status}</span></div><div style="color:var(--mute);margin-top:6px">${esc(m.sn)}<br>${esc(m.course)} ${m.year}-${esc(m.section)}</div>${msg?`<p>${msg}</p>`:""}</div>
+  ${m.status==="enrolled"?`<div class="card hero"><div class="ring" style="background:conic-gradient(${col} ${(rate||0)*3.6}deg,var(--line) 0)"><span>${rate===null?"-":rate+"%"}</span></div><div><b>My attendance</b><div class="chips"><span class="chip">${P} present</span><span class="chip">${L} late</span><span class="chip">${A} absent</span><span class="chip">${E} excused</span></div></div></div>
+  <div class="card"><b>Today</b>${mine?`<p>You are marked <span class="tag ${mine}">${ST[mine]}</span> for today.</p>`:open?`<p style="color:var(--mute)">Enter the code from your teacher.</p><form onsubmit="checkin(event)" style="display:grid;gap:10px"><input name="code" inputmode="numeric" maxlength="4" required placeholder="4-digit code" style="font-size:20px;text-align:center"><button class="btn" style="padding:14px">Check in</button></form>`:`<p style="color:var(--mute)">Check-in is closed. Your teacher will open it during class.</p>`}</div>
+  <div class="card"><b>History</b>${hist.length?hist.map(h=>`<div class="hist"><span>${h.day}</span><span class="tag ${h.status}">${ST[h.status]}</span></div>`).join(""):`<p class="empty">No records yet.</p>`}</div>`:""}</div>`;
+}
+async function checkin(e){e.preventDefault();if(await api("/checkin","POST",fd(e))){toast("Checked in");member()}}
+render();
+</script>
+</body>
+</html>
